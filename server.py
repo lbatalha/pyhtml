@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 import os
 import sys
 import socket
@@ -20,10 +19,14 @@ def client_connection(conn):
 			else:
 				file_request = '.' + input_list[1]
 				if os.path.isfile(file_request) != True:
+					message = "HTTP/1.1 404 Not Found\n\n"
+					conn.sendall(bytes(message, 'UTF-8'))
+					print(message)
 					break
 				print('Requested ' + file_request)
 		else:
-			conn.close()
+			message = "HTTP/1.1 400 Bad Request\n\n"
+			conn.sendall(bytes(message, 'UTF-8'))
 			break
 		
 		with open(file_request, 'r') as fo:
@@ -47,5 +50,3 @@ while True:
 	_thread.start_new_thread(client_connection, (conn,))
 
 s.close()
-
-
