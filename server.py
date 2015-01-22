@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+
 import os
 import sys
 import socket
@@ -8,10 +11,25 @@ def client_connection(conn):
 	while True:
 		data = conn.recv(1024)
 		if not data: break
-		with open('index.html', 'r') as fo:
+
+		input_string = data.decode()
+		input_list = input_string.split()
+
+		if input_list[0] == 'GET':
+			if input_list[1] == '/':
+				file_request = './index.html'
+			else:
+				file_request = '.' + input_list[1]
+				print('Requested ' + file_request)
+		else:
+			conn.close()
+			break
+		
+		with open(file_request, 'r') as fo:
 			content = fo.read()
 			message = "HTTP/1.1 200 OK\n\n" + content
 			conn.sendall(bytes(message, 'UTF-8'))
+			break;
 	conn.close()
 
 HOST = ''                 
