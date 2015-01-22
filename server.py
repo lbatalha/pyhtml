@@ -2,22 +2,20 @@ import os
 import sys
 import socket
 import _thread
-
+import contextlib
 
 def client_connection(conn):
 	while True:
 		data = conn.recv(1024)
-		fo = open('index.html', 'r')
-		content = fo.read()
-		message = "HTTP/1.1 200 OK\n\n" + content
 		if not data: break
-		conn.sendall(bytes(message, 'UTF-8'))
+		with open('index.html', 'r') as fo:
+			content = fo.read()
+			message = "HTTP/1.1 200 OK\n\n" + content
+			conn.sendall(bytes(message, 'UTF-8'))
 	conn.close()
 
 HOST = ''                 
 PORT = 8080
-
-
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -27,6 +25,8 @@ s.listen(1)
 while True:
 	conn, addr = s.accept()
 	print('Connected by', addr)
-	_thread.start_new_thread(client_connection(conn))
+	_thread.start_new_thread(client_connection, (conn,))
+
+s.close()
 
 
