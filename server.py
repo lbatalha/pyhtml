@@ -5,7 +5,6 @@ import os
 import sys
 import socket
 import _thread
-import contextlib
 
 def client_connection(conn):
 	while True:
@@ -20,6 +19,8 @@ def client_connection(conn):
 				file_request = './index.html'
 			else:
 				file_request = '.' + input_list[1]
+				if os.path.isfile(file_request) != True:
+					break
 				print('Requested ' + file_request)
 		else:
 			conn.close()
