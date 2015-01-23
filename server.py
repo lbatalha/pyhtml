@@ -9,7 +9,7 @@ import http.client
 import time
 
 
-def respond(status_code, file_request = None):
+def respond(conn, status_code, file_request = None):
 	
 	if not file_request:
 		file_request = str(status_code)+".html"
@@ -31,10 +31,10 @@ def respond(status_code, file_request = None):
 				"\nContent-Length: " + length_content + \
 				"\n\n"
 
-	try:
-		conn.sendall(bytes(header, 'utf-8') + content)
-	except:
-		return -1
+	#try:
+	conn.sendall(bytes(header, 'utf-8') + content)
+	#except:
+		#return -1
 	return status_code
 
 def client_connection(conn,):
@@ -48,49 +48,51 @@ def client_connection(conn,):
 	input_string = data.decode()
 	input_list = input_string.split()
 
-	try:
-		req = input_list[0]
-		fname = input_list[1]
-	except:
-		req, fname = None
+	#try:
+	req = input_list[0]
+	fname = input_list[1]
+	#except:
+	#	req, fname = None
 
 	if req == 'GET':
 		if fname == '/':
 			file_request = 'index.html'
 		elif not fname:
-			status = respond(400)			
+			status = respond(conn, 400)			
 		elif fname:
 			file_request = fname[1:]
 			print('Requested ' + file_request)	#debug
 			if not os.path.isfile(file_request):
-				status = respond(404)
+				status = respond(conn, 404)
 	else:
-		status = respond(400)
+		status = respond(conn, 400)
 	
 	if not status:
-		status = respond(200, file_request)
+		status = respond(conn, 200, file_request)
 	conn.close()
 	return status
 
-###########################################################################
-###########################################################################
-
-HOST = ''                 
-PORT = 8080
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind((HOST, PORT))
-s.listen(1)
-
-while True:
+def connection_handler():
+	
+	HOST = ''                 
+	PORT = 8080
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	s.bind((HOST, PORT))
+	s.listen(1)
 	conn, addr = s.accept()
 	print('Connected by', addr)
 	_thread.start_new_thread(client_connection, (conn,))
+	return 0
 
-s.close()
+###########################################################################
+###########################################################################
 
 
-# Content-Type: text/html; encoding=UTF-8
-# Content-Length: 258
+
+
+
+while True:
+	connection_handler()
+
 
