@@ -31,39 +31,39 @@ def respond(status_code, file_request = None):
 		conn.sendall(bytes(header, 'utf-8') + content)
 	except:
 		return -1
-	return 0
+	return status_code
 
 def client_connection(conn):
-	while True:
-		data = conn.recv(1024)
-		if not data: break
 
-		input_string = data.decode()
-		input_list = input_string.split()
-		try:
-			fname = input_list[1]
-		except:
-			fname = None
+	data = conn.recv(1024)
+	if not data: status = 1
 
-		if input_list[0] == 'GET':
-			if fname == '/':
-				file_request = 'index.html'
-			elif not fname:
-				respond(400)
-				break
-			elif fname:
-				file_request =  fname[1:]
-				if not os.path.isfile(file_request):
-					respond(404)
-					break
-				print('Requested ' + file_request)
-		else:
-			respond(400)
-			break
+	input_string = data.decode()
+	input_list = input_string.split()
+	print(input_list)
+	try:
+		fname = input_list[1]
+	except:
+		fname = None
+
+	if input_list[0] == 'GET':
+		if fname == '/':
+			file_request = 'index.html'
+		elif not fname:
+			status = respond(400)			
+		elif fname:
+			file_request =  fname[1:]
+			if not os.path.isfile(file_request):
+				status =respond(404)
+			print('Requested ' + file_request)
+	else:
+		status = respond(400)
 	
-		respond(200, file_request)
-		break;
+
+	status = respond(200, file_request)
+		
 	conn.close()
+	return status
 
 HOST = ''                 
 PORT = 8080
