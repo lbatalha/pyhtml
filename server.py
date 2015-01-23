@@ -7,7 +7,7 @@ import mimetypes
 import _thread
 import http.client
 import time
-
+import posixpath
 
 def respond(conn, status_code, file_request = None):
 	
@@ -60,7 +60,7 @@ def client_connection(conn,):
 		elif not fname:
 			status = respond(conn, 400)			
 		elif fname:
-			file_request = fname[1:]
+			file_request = "." + os.path.normpath(fname)
 			print('Requested ' + file_request)	#debug
 			if not os.path.isfile(file_request):
 				status = respond(conn, 404)
