@@ -6,26 +6,31 @@ import socket
 import mimetypes
 import _thread
 import http.client
-
+import time
 
 
 def respond(status_code, file_request = None):
 	
 	if not file_request:
 		file_request = str(status_code)+".html"
-	
+
 	http_mime = mimetypes.guess_type(file_request, strict = True)	
 	encoding = str(http_mime[1])
 	mime = str(http_mime[0])
 
-	http_status_code = str(status_code) + " " + http.client.responses[status_code] + "\n"
+	http_status_code = str(status_code) + " " + http.client.responses[status_code]
 	http_ver = "HTTP/1.1 "
-
-
-	header = http_ver +  http_status_code + "Content-Type: " + mime + "; encoding=" + encoding + "\n\n"
 
 	with open(file_request, 'rb') as fo:
 		content = fo.read()
+	
+	length_content = str(sys.getsizeof(content))
+
+	header = 	http_ver + \
+				http_status_code + \
+				"\nContent-Type: " + mime + "; encoding=" + encoding + \
+				"\nContent-Length: " + length_content + \
+				"\n\n"
 	
 	try:
 		conn.sendall(bytes(header, 'utf-8') + content)
@@ -33,37 +38,43 @@ def respond(status_code, file_request = None):
 		return -1
 	return status_code
 
-def client_connection(conn):
-
+def client_connection(conn,):
+	
+	status = 0
 	data = conn.recv(1024)
-	if not data: status = 1
+	if not data: 
+		conn.close()
+		return 1
 
 	input_string = data.decode()
 	input_list = input_string.split()
-	print(input_list)
+
 	try:
+		req = input_list[0]
 		fname = input_list[1]
 	except:
-		fname = None
+		req, fname = None
 
-	if input_list[0] == 'GET':
+	if req == 'GET':
 		if fname == '/':
 			file_request = 'index.html'
 		elif not fname:
 			status = respond(400)			
 		elif fname:
-			file_request =  fname[1:]
+			file_request = fname[1:]
+			print('Requested ' + file_request)	#debug
 			if not os.path.isfile(file_request):
-				status =respond(404)
-			print('Requested ' + file_request)
+				status = respond(404)
 	else:
 		status = respond(400)
 	
-
-	status = respond(200, file_request)
-		
+	if not status:
+		status = respond(200, file_request)
 	conn.close()
 	return status
+
+###########################################################################
+###########################################################################
 
 HOST = ''                 
 PORT = 8080
@@ -83,3 +94,4 @@ s.close()
 
 # Content-Type: text/html; encoding=UTF-8
 # Content-Length: 258
+
