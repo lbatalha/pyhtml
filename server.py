@@ -24,14 +24,13 @@ def respond(status_code, file_request = None):
 	with open(file_request, 'rb') as fo:
 		content = fo.read()
 	
-	length_content = str(sys.getsizeof(content))
+	length_content = str(len(content))
 
-	header = 	http_ver + \
-				http_status_code + \
+	header = 	http_ver + http_status_code + \
 				"\nContent-Type: " + mime + "; encoding=" + encoding + \
 				"\nContent-Length: " + length_content + \
 				"\n\n"
-	
+
 	try:
 		conn.sendall(bytes(header, 'utf-8') + content)
 	except:
