@@ -22,15 +22,10 @@ def respond(status_code, file_request = None):
 	http_ver = "HTTP/1.1 "
 
 
-	header = http_ver +  http_status_code + "Content Type: " + mime + "; encoding=" + encoding + "\n\n"
+	header = http_ver +  http_status_code + "Content-Type: " + mime + "; encoding=" + encoding + "\n\n"
 
-	if not file_request or mime.split('/') == 'text':
-		with open(file_request, 'r') as fo:
-			content = bytes(fo.read(), encoding)
-	else:
-		with open(file_request, 'rb') as fo:
-			content = fo.read()
-	
+	with open(file_request, 'rb') as fo:
+		content = fo.read()
 	
 	try:
 		conn.sendall(bytes(header, 'utf-8') + content)
@@ -46,18 +41,18 @@ def client_connection(conn):
 		input_string = data.decode()
 		input_list = input_string.split()
 		try:
-			fr = input_list[1]
+			fname = input_list[1]
 		except:
-			fr = None
+			fname = None
 
 		if input_list[0] == 'GET':
-			if fr == '/':
+			if fname == '/':
 				file_request = 'index.html'
-			elif not fr:
+			elif not fname:
 				respond(400)
 				break
-			elif fr != None:
-				file_request =  fr[1:]
+			elif fname:
+				file_request =  fname[1:]
 				if not os.path.isfile(file_request):
 					respond(404)
 					break
