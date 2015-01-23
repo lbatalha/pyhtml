@@ -7,19 +7,24 @@ import mimetypes
 import _thread
 import http.client
 
-http_ver = "HTTP/1.1"
+
 
 def respond(status_code, file_request = None):
 	
-	http_status_code = str(status_code) + " " + http.client.responses[status_code] + "\n"
-	http_mime = mimetypes.guess_type(file_request, strict = True)
-	http_ver = "HTTP/1.1 "
+	if not file_request:
+		file_request = str(status_code)+".html"
+	
+	http_mime = mimetypes.guess_type(file_request, strict = True)	
 	encoding = str(http_mime[1])
 	mime = str(http_mime[0])
 
-	header = http_ver +  http_status_code + "Content Type: " + mime + "; encoding=" + encoding + "\n"
+	http_status_code = str(status_code) + " " + http.client.responses[status_code] + "\n"
+	http_ver = "HTTP/1.1 "
 
-	if file_request == None or mime.split('/') == 'text':
+
+	header = http_ver +  http_status_code + "Content Type: " + mime + "; encoding=" + encoding + "\n\n"
+
+	if not file_request or mime.split('/') == 'text':
 		with open(file_request, 'r') as fo:
 			content = bytes(fo.read(), encoding)
 	else:
@@ -47,7 +52,7 @@ def client_connection(conn):
 
 		if input_list[0] == 'GET':
 			if fr == '/':
-				file_request = './index.html'
+				file_request = 'index.html'
 			elif not fr:
 				respond(400)
 				break
