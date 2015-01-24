@@ -7,7 +7,7 @@ import mimetypes
 import _thread
 import http.client
 import time
-import posixpath
+import urllib
 
 def respond(conn, status_code, file_request = None):
 	
@@ -60,7 +60,7 @@ def client_connection(conn,):
 		elif not fname:
 			status = respond(conn, 400)			
 		elif fname:
-			file_request = "." + os.path.normpath(fname)
+			file_request = "." + os.path.abspath(urllib.parse.unquote_plus(fname))
 			print('Requested ' + file_request)	#debug
 			if not os.path.isfile(file_request):
 				status = respond(conn, 404)
@@ -72,7 +72,7 @@ def client_connection(conn,):
 	conn.close()
 	return status
 
-def connection_handler():
+def main():
 	
 	HOST = ''                 
 	PORT = 8080
@@ -80,10 +80,11 @@ def connection_handler():
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	s.bind((HOST, PORT))
 	s.listen(1)
-	conn, addr = s.accept()
-	print('Connected by', addr)
-	_thread.start_new_thread(client_connection, (conn,))
-	return 0
+	while True:
+		conn, addr = s.accept()
+		print('Connected by', addr)
+		_thread.start_new_thread(client_connection, (conn,))
+		return 0
 
 ###########################################################################
 ###########################################################################
@@ -92,7 +93,5 @@ def connection_handler():
 
 
 
-while True:
-	connection_handler()
 
-
+main()
