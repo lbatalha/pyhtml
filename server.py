@@ -41,15 +41,13 @@ def client_connection(conn,):
 	
 	status = 0
 	print("start thread\n")	
-	chunks = []
-	data = ''
+	data = b''
 	while True:
 		chunk = conn.recv(1024)
 		if chunk == b'':
 			print("socket returned empty\n")
 			break
-		chunks.append(chunk)
-		data = b''.join(chunks)
+		data = data + chunk
 		if data[-4:] == b'\r\n\r\n':
 			break
 		
