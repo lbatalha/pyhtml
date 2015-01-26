@@ -40,21 +40,24 @@ def respond(conn, status_code, file_request = None):
 def client_connection(conn,):
 	
 	status = 0
-	
-	try:
-		while True:
-			chunk = conn.recv(1024)
-			if chunk == b'':
-				print("socket returned empty")
-				break
-			chunks.append(chunk)
-			data = b''.join(chunks)
-	except Exception as e: print(e)
-	finally: conn.close()
-
+	print("start thread\n")	
+	chunks = []
+	data = ''
+	while True:
+		chunk = conn.recv(1024)
+		if chunk == b'':
+			print("socket returned empty\n")
+			break
+		chunks.append(chunk)
+		data = b''.join(chunks)
+		if data[-4:] == b'\r\n\r\n':
+			break
+		
+	print("\n----\n")
 	input_string = data.decode()
 	input_list = input_string.split()
-
+	print(input_string)
+	
 	try:
 		req = input_list[0]
 		fname = input_list[1]
@@ -78,7 +81,7 @@ def client_connection(conn,):
 	if not status:
 		status = respond(conn, 200, file_request)
 	conn.close()
-	thread.exit()
+	return 0
 
 def main():
 	
@@ -92,7 +95,7 @@ def main():
 		conn, addr = s.accept()
 		print('Connected by', addr)
 		_thread.start_new_thread(client_connection, (conn,))
-		return 0
+
 
 ###########################################################################
 ###########################################################################
