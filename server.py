@@ -14,7 +14,7 @@ def respond(conn, status_code, file_request = None):
 	if not file_request:
 		file_request = str(status_code)+".html"
 
-	http_mime = mimetypes.guess_type(file_request, strict = True)	
+	http_mime = mimetypes.guess_type(file_request, strict = True)
 	encoding = str(http_mime[1])
 	mime = str(http_mime[0])
 
@@ -40,25 +40,33 @@ def respond(conn, status_code, file_request = None):
 def client_connection(conn,):
 	
 	status = 0
-	data = conn.recv(1024)
-	if not data: 
-		conn.close()
-		return 1
+	
+	try:
+		while True:
+			chunk = conn.recv(1024)
+			if chunk == b'':
+				print("socket returned empty")
+				break
+			chunks.append(chunk)
+			data = b''.join(chunks)
+	except Exception as e: print(e)
+	finally: conn.close()
 
 	input_string = data.decode()
 	input_list = input_string.split()
 
-	#try:
-	req = input_list[0]
-	fname = input_list[1]
-	#except:
-	#	req, fname = None
+	try:
+		req = input_list[0]
+		fname = input_list[1]
+	except Exception as e:
+		print (e)
+		req, fname = None
 
 	if req == 'GET':
 		if fname == '/':
 			file_request = 'index.html'
 		elif not fname:
-			status = respond(conn, 400)			
+			status = respond(conn, 400)
 		elif fname:
 			file_request = "." + os.path.abspath(urllib.parse.unquote_plus(fname))
 			print('Requested ' + file_request)	#debug
@@ -70,11 +78,11 @@ def client_connection(conn,):
 	if not status:
 		status = respond(conn, 200, file_request)
 	conn.close()
-	return status
+	thread.exit()
 
 def main():
 	
-	HOST = ''                 
+	HOST = ''
 	PORT = 8080
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
